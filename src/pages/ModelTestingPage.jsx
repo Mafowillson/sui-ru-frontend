@@ -12,6 +12,7 @@ import { detectHateSpeech } from '../services/apiService';
 const ModelTestingPage = () => {
   const { colors } = useTheme();
   const [inputText, setInputText] = useState('');
+  const [analysisType, setAnalysisType] = useState('hate_speech'); // New state for analysis type
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [error, setError] = useState(null);
@@ -459,7 +460,7 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
   // Analyze a single post
   const analyzePost = async (post) => {
     try {
-      const response = await detectHateSpeech(post.content);
+      const response = await detectHateSpeech(post.content, analysisType);
       if (response.success) {
         setAnalyzedPosts(prev => ({
           ...prev,
@@ -471,7 +472,7 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
     }
   };
 
-  // API call to hate speech detection service
+  // API call to content analysis service
   const handleAnalyze = async () => {
     if (!inputText.trim()) return;
     
@@ -479,14 +480,74 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
     setError(null);
     
     try {
-      const response = await detectHateSpeech(inputText);
+      const response = await detectHateSpeech(inputText, analysisType);
+      console.log('Response received:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', Object.keys(response || {}));
       
-      if (response.success) {
-        setAnalysisResult(response.data);
+      // Handle different response structures
+      if (response) {
+        // If response has success property (mock data format)
+        if (response.success !== undefined) {
+          if (response.success) {
+            setAnalysisResult(response.data);
+          } else {
+            console.error('Response failed:', response);
+            setError(response.error || 'Analysis failed. Please try again.');
+          }
+        } 
+        // If response has hate_speech_analysis property (actual API format)
+        else if (response.hate_speech_analysis) {
+          console.log('Using hate_speech_analysis from response');
+          const analysisData = {
+            text: response.text,
+            analysis_type: 'hate_speech',
+            is_hate_speech: response.hate_speech_analysis.is_hate_speech,
+            confidence: response.hate_speech_analysis.confidence,
+            category: response.hate_speech_analysis.category,
+            severity: response.hate_speech_analysis.severity,
+            detected_keywords: response.hate_speech_analysis.detected_keywords,
+            explanation: response.hate_speech_analysis.explanation,
+            timestamp: response.timestamp
+          };
+          setAnalysisResult(analysisData);
+        }
+        // If response has misinformation_analysis property
+        else if (response.misinformation_analysis) {
+          console.log('Using misinformation_analysis from response');
+          const analysisData = {
+            text: response.text,
+            analysis_type: 'misinformation',
+            is_misinformation: response.misinformation_analysis.is_misinformation,
+            confidence: response.misinformation_analysis.confidence,
+            category: response.misinformation_analysis.category,
+            severity: response.misinformation_analysis.severity,
+            detected_keywords: response.misinformation_analysis.detected_keywords,
+            explanation: response.misinformation_analysis.explanation,
+            timestamp: response.timestamp
+          };
+          setAnalysisResult(analysisData);
+        }
+        // If response is the data directly (legacy API format)
+        else if (response.text || response.analysis_type || response.is_hate_speech !== undefined) {
+          console.log('Using response as data directly');
+          setAnalysisResult(response);
+        }
+        // If response has data property
+        else if (response.data) {
+          console.log('Using response.data');
+          setAnalysisResult(response.data);
+        }
+        else {
+          console.error('Unknown response format:', response);
+          setError('Unknown response format received.');
+        }
       } else {
-        setError(response.error || 'Analysis failed. Please try again.');
+        console.error('No response received');
+        setError('No response received from server.');
       }
     } catch (err) {
+      console.error('Error in handleAnalyze:', err);
       setError('Analysis failed. Please try again.');
     } finally {
       setIsAnalyzing(false);
@@ -542,10 +603,10 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4" style={{ color: colors.text }}>
-            Hate Speech Detection Model Testing
+            Content Analysis Model Testing
           </h1>
           <p className="text-xl" style={{ color: colors.textSecondary }}>
-            Test our AI-powered hate speech detection model with your own text content and real-time social media simulation
+            Test our AI-powered content analysis models for hate speech and misinformation detection with your own text content and real-time social media simulation
           </p>
         </div>
 
@@ -1084,6 +1145,31 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
             </h2>
             
             <div className="space-y-4">
+              {/* Analysis Type Selection */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                  Select Analysis Type:
+                </label>
+                <div className="flex gap-3">
+                  <Button 
+                    variant={analysisType === 'hate_speech' ? 'primary' : 'outline'}
+                    onClick={() => setAnalysisType('hate_speech')}
+                    className="flex items-center gap-2"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    Analyze Hate Speech
+                  </Button>
+                  <Button 
+                    variant={analysisType === 'misinformation' ? 'primary' : 'outline'}
+                    onClick={() => setAnalysisType('misinformation')}
+                    className="flex items-center gap-2"
+                  >
+                    <Brain className="w-4 h-4" />
+                    Analyze Misinformation
+                  </Button>
+                </div>
+              </div>
+              
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
                   Enter your text post here:
@@ -1119,7 +1205,7 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      Analyze Text
+                      Analyze for {analysisType === 'hate_speech' ? 'Hate Speech' : 'Misinformation'}
                     </>
                   )}
                 </Button>
@@ -1131,27 +1217,89 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
               <h3 className="text-sm font-medium mb-3" style={{ color: colors.textSecondary }}>
                 Try these sample texts:
               </h3>
-              <div className="space-y-2">
-                {[
-                  "All Anglophones are separatists and should be eliminated from our country.",
-                  "I love this community in Douala and everyone in it! Let's work together!",
-                  "The government is hiding oil money in Swiss banks and using witchcraft to control our minds!",
-                  "We need to kill all the Bamileke people and take back our country!",
-                  "Scientists discover that drinking hot water with bitter leaf cures HIV in 24 hours!",
-                  "Happy birthday to my amazing sister! You're the best person I know!"
-                ].map((sample, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setInputText(sample)}
-                    className="block w-full text-left text-sm p-2 rounded border transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                    style={{ 
-                      borderColor: colors.border,
-                      color: colors.textSecondary
-                    }}
-                  >
-                    {sample}
-                  </button>
-                ))}
+              
+              {/* Hate Speech Examples */}
+              <div className="mb-4">
+                <h4 className="text-xs font-medium mb-2" style={{ color: colors.error }}>
+                  Hate Speech Examples:
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    "All Anglophones are separatists and should be eliminated from our country.",
+                    "We need to kill all the Bamileke people and take back our country!",
+                    "All Fulani people control the cattle trade and banks! They're plotting against us!"
+                  ].map((sample, index) => (
+                    <button
+                      key={`hate-${index}`}
+                      onClick={() => {
+                        setInputText(sample);
+                        setAnalysisType('hate_speech');
+                      }}
+                      className="block w-full text-left text-sm p-2 rounded border transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                      style={{ 
+                        borderColor: colors.border,
+                        color: colors.textSecondary
+                      }}
+                    >
+                      {sample}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Misinformation Examples */}
+              <div className="mb-4">
+                <h4 className="text-xs font-medium mb-2" style={{ color: colors.warning }}>
+                  Misinformation Examples:
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    "Scientists discover that drinking hot water with bitter leaf cures HIV in 24 hours!",
+                    "The government is hiding oil money in Swiss banks and using witchcraft to control our minds!",
+                    "The deep state is using traditional healers to implant microchips!"
+                  ].map((sample, index) => (
+                    <button
+                      key={`misinfo-${index}`}
+                      onClick={() => {
+                        setInputText(sample);
+                        setAnalysisType('misinformation');
+                      }}
+                      className="block w-full text-left text-sm p-2 rounded border transition-colors hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                      style={{ 
+                        borderColor: colors.border,
+                        color: colors.textSecondary
+                      }}
+                    >
+                      {sample}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Positive Examples */}
+              <div>
+                <h4 className="text-xs font-medium mb-2" style={{ color: colors.success }}>
+                  Positive Examples:
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    "I love this community in Douala and everyone in it! Let's work together!",
+                    "Happy birthday to my amazing sister! You're the best person I know!",
+                    "Just finished reading an amazing book about climate change solutions for the Sahel region."
+                  ].map((sample, index) => (
+                    <button
+                      key={`positive-${index}`}
+                      onClick={() => setInputText(sample)}
+                      className="block w-full text-left text-sm p-2 rounded border transition-colors hover:bg-green-50 dark:hover:bg-green-900/20"
+                      style={{ 
+                        borderColor: colors.border,
+                        color: colors.textSecondary
+                      }}
+                    >
+                      {sample}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </Card>
@@ -1186,12 +1334,15 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
                 <Card className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-semibold" style={{ color: colors.text }}>
-                      Analysis Results
+                      {analysisType === 'hate_speech' ? 'Hate Speech' : 'Misinformation'} Analysis Results
                     </h3>
                     <div className="flex items-center gap-2">
                       {getHateSpeechIcon(analysisResult.is_hate_speech)}
                       <span className="font-medium" style={{ color: colors.text }}>
-                        {analysisResult.is_hate_speech ? 'Hate Speech Detected' : 'Safe Content'}
+                        {analysisType === 'hate_speech' 
+                          ? (analysisResult.is_hate_speech ? 'Hate Speech Detected' : 'Safe Content')
+                          : (analysisResult.is_misinformation ? 'Misinformation Detected' : 'Safe Content')
+                        }
                       </span>
                     </div>
                   </div>
@@ -1225,6 +1376,12 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
                         <span style={{ color: colors.textSecondary }}>Content Type:</span>
                         <span className="ml-2 font-medium" style={{ color: colors.text }}>
                           Manual Input
+                        </span>
+                      </div>
+                      <div>
+                        <span style={{ color: colors.textSecondary }}>Analysis Type:</span>
+                        <span className="ml-2 font-medium" style={{ color: colors.text }}>
+                          {analysisType === 'hate_speech' ? 'Hate Speech Detection' : 'Misinformation Detection'}
                         </span>
                       </div>
                       <div>
@@ -1334,7 +1491,7 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
                     <Zap className="w-5 h-5" style={{ color: colors.secondary }} />
-                    Raw Model Response
+                    Raw {analysisType === 'hate_speech' ? 'Hate Speech' : 'Misinformation'} Model Response
                   </h3>
                   <div 
                     className="p-4 rounded-lg text-sm font-mono overflow-x-auto"
@@ -1356,9 +1513,9 @@ Time Range: ${filters.startTime || 'None'} to ${filters.endTime || 'None'}
         {/* Footer Info */}
         <div className="mt-12 text-center">
           <p className="text-sm" style={{ color: colors.textMuted }}>
-            This interface demonstrates our hate speech detection model's capabilities with real-time social media simulation. 
-            The model analyzes text content and provides confidence scores, severity levels, 
-            and detailed explanations for its classifications.
+            This interface demonstrates our content analysis models' capabilities for both hate speech and misinformation detection with real-time social media simulation. 
+            The models analyze text content and provide confidence scores, severity levels, 
+            and detailed explanations for their classifications.
           </p>
         </div>
       </div>

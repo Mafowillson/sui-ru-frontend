@@ -1,4 +1,6 @@
 // API service for news data
+import axiosInstance from '../axiosInstance';
+
 const NEWS_API_KEY = 'be5ab416d6a043ec93cb7edac5cb7889';
 const NEWS_API_BASE_URL = 'https://newsapi.org/v2';
 
@@ -308,103 +310,173 @@ export const blogService = {
 
 };
 
-// Hate Speech Detection API - exported separately for easy import
-export const detectHateSpeech = async (text) => {
-  try {
-    // TODO: Replace with actual API endpoint
-    // const response = await axiosInstance.post('/api/hate-speech-detection', { text });
-    // return response.data;
-    
-    // Mock response for demonstration
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const lowerText = text.toLowerCase();
-    
-    // Enhanced detection logic
-    const hateSpeechKeywords = [
-      'hate', 'kill', 'eliminate', 'destroy', 'terrorist', 'muslim', 'jew', 'black', 'white', 'asian',
-      'gay', 'lesbian', 'trans', 'queer', 'faggot', 'nigger', 'spic', 'chink', 'kike', 'towelhead',
-      'liberal', 'conservative', 'democrat', 'republican', 'commie', 'nazi', 'fascist'
-    ];
-    
-    const violenceKeywords = [
-      'kill', 'murder', 'assassinate', 'bomb', 'shoot', 'attack', 'war', 'fight', 'destroy',
-      'eliminate', 'exterminate', 'wipe out', 'burn', 'hang', 'lynch'
-    ];
-    
-    const misinformationKeywords = [
-      'cure', 'miracle', 'secret', 'conspiracy', 'government hiding', 'wake up', 'sheeple',
-      'truth', 'real news', 'fake news', 'mainstream media', 'deep state'
-    ];
-    
-    const isHateSpeech = hateSpeechKeywords.some(keyword => lowerText.includes(keyword)) ||
-                         violenceKeywords.some(keyword => lowerText.includes(keyword));
-    
-    const isMisinformation = misinformationKeywords.some(keyword => lowerText.includes(keyword));
-    
-    // Determine severity based on content
-    let severity = 'low';
-    if (violenceKeywords.some(keyword => lowerText.includes(keyword))) {
-      severity = 'high';
-    } else if (hateSpeechKeywords.some(keyword => lowerText.includes(keyword))) {
-      severity = 'medium';
+// Mock response generator for testing
+export const generateMockResponse = async (text, analysisType) => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  const lowerText = text.toLowerCase();
+  
+  // Enhanced detection logic
+  const hateSpeechKeywords = [
+    'hate', 'kill', 'eliminate', 'destroy', 'terrorist', 'muslim', 'jew', 'black', 'white', 'asian',
+    'gay', 'lesbian', 'trans', 'queer', 'faggot', 'nigger', 'spic', 'chink', 'kike', 'towelhead',
+    'liberal', 'conservative', 'democrat', 'republican', 'commie', 'nazi', 'fascist', 'anglophone',
+    'bamileke', 'fulani', 'separatist', 'stupid', 'idiot', 'moron', 'retard', 'cancer', 'die'
+  ];
+  
+  const violenceKeywords = [
+    'kill', 'murder', 'assassinate', 'bomb', 'shoot', 'attack', 'war', 'fight', 'destroy',
+    'eliminate', 'exterminate', 'wipe out', 'burn', 'hang', 'lynch', 'beat', 'stab', 'punch'
+  ];
+  
+  const misinformationKeywords = [
+    'cure', 'miracle', 'secret', 'conspiracy', 'government hiding', 'wake up', 'sheeple',
+    'truth', 'real news', 'fake news', 'mainstream media', 'deep state', 'scientists discover',
+    'bitter leaf', 'hiv', '24 hours', 'microchips', 'traditional healers', 'vaccine causes',
+    '5g', 'bill gates', 'population control', 'illuminati', 'new world order'
+  ];
+  
+  // Analyze based on the selected analysis type
+  let isHateSpeech = false;
+  let isMisinformation = false;
+  
+  if (analysisType === 'hate_speech') {
+    isHateSpeech = hateSpeechKeywords.some(keyword => lowerText.includes(keyword)) ||
+                   violenceKeywords.some(keyword => lowerText.includes(keyword));
+  } else if (analysisType === 'misinformation') {
+    isMisinformation = misinformationKeywords.some(keyword => lowerText.includes(keyword));
+  } else {
+    // If analysis type is unknown, check both
+    isHateSpeech = hateSpeechKeywords.some(keyword => lowerText.includes(keyword)) ||
+                   violenceKeywords.some(keyword => lowerText.includes(keyword));
+    isMisinformation = misinformationKeywords.some(keyword => lowerText.includes(keyword));
+  }
+  
+  // Determine severity based on content
+  let severity = 'low';
+  if (violenceKeywords.some(keyword => lowerText.includes(keyword))) {
+    severity = 'high';
+  } else if (hateSpeechKeywords.some(keyword => lowerText.includes(keyword))) {
+    severity = 'medium';
+  } else if (misinformationKeywords.some(keyword => lowerText.includes(keyword))) {
+    severity = 'medium';
+  }
+  
+  // Calculate confidence based on keyword matches
+  const allKeywords = [...hateSpeechKeywords, ...violenceKeywords, ...misinformationKeywords];
+  const keywordMatches = allKeywords.filter(keyword => lowerText.includes(keyword)).length;
+  const confidence = Math.min(0.95, 0.3 + (keywordMatches * 0.15));
+  
+  // Generate explanation based on detected content and analysis type
+  let explanation = "Content appears safe based on analysis.";
+  if (analysisType === 'hate_speech') {
+    if (isHateSpeech) {
+      explanation = "Content contains hate speech elements including discriminatory language, threats, or calls for violence.";
+    } else {
+      explanation = "Content appears safe from hate speech detection.";
     }
-    
-    // Calculate confidence based on keyword matches
-    const keywordMatches = [...hateSpeechKeywords, ...violenceKeywords, ...misinformationKeywords]
-      .filter(keyword => lowerText.includes(keyword)).length;
-    const confidence = Math.min(0.95, 0.6 + (keywordMatches * 0.1));
-    
-    // Generate explanation based on detected content
-    let explanation = "Content appears safe based on analysis.";
+  } else if (analysisType === 'misinformation') {
+    if (isMisinformation) {
+      explanation = "Content appears to contain misinformation or conspiracy theories that could mislead readers.";
+    } else {
+      explanation = "Content appears to be factual and reliable.";
+    }
+  } else {
     if (isHateSpeech && isMisinformation) {
-      explanation = "Content contains both hate speech and misinformation elements. Multiple concerning patterns detected including discriminatory language and false claims.";
+      explanation = "Content contains both hate speech and misinformation elements. Multiple concerning patterns detected.";
     } else if (isHateSpeech) {
       explanation = "Content contains hate speech elements including discriminatory language, threats, or calls for violence.";
     } else if (isMisinformation) {
       explanation = "Content appears to contain misinformation or conspiracy theories that could mislead readers.";
     }
-    
-    // Detect specific keywords for display
-    const detectedKeywords = [];
-    hateSpeechKeywords.forEach(keyword => {
-      if (lowerText.includes(keyword)) detectedKeywords.push(keyword);
-    });
-    violenceKeywords.forEach(keyword => {
-      if (lowerText.includes(keyword)) detectedKeywords.push(keyword);
-    });
-    misinformationKeywords.forEach(keyword => {
-      if (lowerText.includes(keyword)) detectedKeywords.push(keyword);
-    });
-    
-    const mockResponse = {
-      text: text,
-      is_hate_speech: isHateSpeech,
-      is_misinformation: isMisinformation,
-      confidence: confidence,
-      category: "enhanced_twitter_model_v2",
-      severity: severity,
-      detected_keywords: detectedKeywords.slice(0, 5), // Limit to 5 keywords
-      explanation: explanation,
-      timestamp: new Date().toISOString(),
-      processing_time_ms: Math.floor(Math.random() * 20) + 5,
-      risk_score: Math.floor(confidence * 100),
-      moderation_action: isHateSpeech ? "flag_for_review" : isMisinformation ? "fact_check_needed" : "no_action",
-      language: "en",
-      sentiment: isHateSpeech ? "negative" : "neutral"
-    };
-    
-    return {
-      success: true,
-      data: mockResponse
-    };
-  } catch (error) {
-    console.error('Error detecting hate speech:', error);
-    return {
-      success: false,
-      error: error.message
-    };
   }
+  
+  // Detect specific keywords for display
+  const detectedKeywords = [];
+  hateSpeechKeywords.forEach(keyword => {
+    if (lowerText.includes(keyword)) detectedKeywords.push(keyword);
+  });
+  violenceKeywords.forEach(keyword => {
+    if (lowerText.includes(keyword)) detectedKeywords.push(keyword);
+  });
+  misinformationKeywords.forEach(keyword => {
+    if (lowerText.includes(keyword)) detectedKeywords.push(keyword);
+  });
+  
+  // Create mock response in the same format as the actual API
+  const mockResponse = {
+    text: text,
+    timestamp: new Date().toISOString(),
+    ...(analysisType === 'hate_speech' ? {
+      hate_speech_analysis: {
+        is_hate_speech: isHateSpeech,
+        confidence: confidence,
+        category: "mock_analysis_model_v1",
+        severity: severity,
+        detected_keywords: detectedKeywords.slice(0, 5), // Limit to 5 keywords
+        explanation: explanation
+      }
+    } : {
+      misinformation_analysis: {
+        is_misinformation: isMisinformation,
+        confidence: confidence,
+        category: "mock_analysis_model_v1",
+        severity: severity,
+        detected_keywords: detectedKeywords.slice(0, 5), // Limit to 5 keywords
+        explanation: explanation
+      }
+    })
+  };
+  
+  return {
+    success: true,
+    data: mockResponse
+  };
+};
+
+// Unified Content Analysis API - supports both hate speech and misinformation detection
+export const analyzeContent = async (text, analysisType = 'hate_speech') => {
+  console.log('analyzeContent called with:', { text: text.substring(0, 50) + '...', analysisType });
+  
+  try {
+    // Try to call the actual API endpoint
+    console.log('Attempting API call...');
+    const response = await axiosInstance.post('/api/report/unified-analyze/', { 
+      text,
+      analysis_type: analysisType
+    });
+    console.log('API call successful:', response.data);
+    console.log('API response structure:', {
+      hasSuccess: 'success' in response.data,
+      hasData: 'data' in response.data,
+      hasText: 'text' in response.data,
+      hasAnalysisType: 'analysis_type' in response.data,
+      keys: Object.keys(response.data || {})
+    });
+    return response.data;
+  } catch (error) {
+    console.error('API Error:', error.response?.status, error.response?.data);
+    console.log('Falling back to mock data...');
+    
+    // If API fails (401, 404, 500, etc.), use mock data
+    const mockResponse = await generateMockResponse(text, analysisType);
+    console.log('Mock response generated:', mockResponse);
+    return mockResponse;
+  }
+};
+
+// Legacy function for backward compatibility
+export const detectHateSpeech = async (text, analysisType = 'hate_speech') => {
+  return analyzeContent(text, analysisType);
+};
+
+// Test function to verify mock data works
+export const testMockData = async () => {
+  console.log('Testing mock data...');
+  const mockResponse = await generateMockResponse('I hate everyone', 'hate_speech');
+  console.log('Mock test result:', mockResponse);
+  return mockResponse;
 };
 
 // Utility functions
