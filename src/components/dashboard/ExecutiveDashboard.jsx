@@ -1342,16 +1342,14 @@ const ExecutiveDashboard = ({ user, onLogout, onAnalystClick }) => {
     }
   };
 
-  const handleAnalystClick = () => {
-    navigate('/analyst');
-  };
+
 
   return (
     <div 
       className="min-h-screen transition-all duration-500"
       style={{ backgroundColor: colors.bg }}
     >
-      <SideNavigation activeTab={activeTab} setActiveTab={setActiveTab} onLogout={onLogout} onAnalystClick={handleAnalystClick} />
+      <SideNavigation activeTab={activeTab} setActiveTab={setActiveTab} onLogout={onLogout} />
       
       <div className="ml-64 pt-16">
         {/* Header */}

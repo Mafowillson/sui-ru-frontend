@@ -27,7 +27,7 @@ import PrivateRoutes from './PrivateRoutes';
 import AlertManagementPage from './dashboard/AlertManagementPage';
 import PlatformAnalysisPage from './dashboard/PlatformAnalysisPage';
 import { AuthContext } from './AuthProvider';
-import AnalystWorkstation from './components/analystWorkstation/AnalystWorkstation';
+
 
 
 function AppRoutes({ user, setUser, isLoading, setIsLoading }) {
@@ -60,13 +60,7 @@ function AppRoutes({ user, setUser, isLoading, setIsLoading }) {
     }, 1000);
   };
 
-  const handleAnalystClick = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      navigate('/analyst');
-      setIsLoading(false);
-    }, 500);
-  };
+
 
   const handleLogout = () => {
     setIsLoading(true);
@@ -160,11 +154,11 @@ function AppRoutes({ user, setUser, isLoading, setIsLoading }) {
         <Route path="/emergency-procedures" element={<EmergencyProceduresPage />} />
         {/* Private routes */}
         <Route path="/alert-management" element={<PrivateRoutes><AlertManagementPage /></PrivateRoutes>} />
-        <Route path="/dashboard" element={<PrivateRoutes><ExecutiveDashboard user={user} onLogout={handleLogout} onAnalystClick={handleAnalystClick} /></PrivateRoutes>} />
+        <Route path="/dashboard" element={<PrivateRoutes><ExecutiveDashboard user={user} onLogout={handleLogout} /></PrivateRoutes>} />
         <Route path="/content-queue" element={<PrivateRoutes><ContentQueuePage /></PrivateRoutes>} />
         <Route path="/platform-analysis" element={<PrivateRoutes><PlatformAnalysisPage /></PrivateRoutes>} />
         <Route path="/reports" element={<PrivateRoutes><ReportPage /></PrivateRoutes>} />
-        <Route path="/analyst" element={<PrivateRoutes><AnalystWorkstation onLogout={handleLogout} /></PrivateRoutes>} />
+
       </Routes>
       <ChatbotOverlay />
     </div>

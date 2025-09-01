@@ -3,7 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import Button from '../ui/Button';
 import { Home, Search, FileText, Settings } from 'lucide-react';
 
-const AnalystSideNavigation = ({ onLogout }) => {
+const AnalystSideNavigation = ({ onLogout, onNavigateToDashboard }) => {
   const { colors } = useTheme();
   const [currentApp, setCurrentApp] = useState('analyst');
 
@@ -16,7 +16,9 @@ const AnalystSideNavigation = ({ onLogout }) => {
 
   const handleNavigation = (id) => {
     if (id === 'dashboard') {
-      window.location.reload();
+      if (onNavigateToDashboard) {
+        onNavigateToDashboard();
+      }
     } else {
       setCurrentApp(id);
     }

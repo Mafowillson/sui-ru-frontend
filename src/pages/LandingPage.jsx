@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
-import { Globe, Shield, Activity, Search, Eye, Zap, Globe2, Network, Brain, Radar, Target, UserPlus, Building, Cpu, User, CheckCircle, Camera, Video, Play, Send, Users2, MessageSquare, MessageCircle, Heart, Vote } from 'lucide-react';
+import { Globe, Shield, Activity, Search, Eye, Zap, Globe2, Network, Brain, Radar, Target, UserPlus, CheckCircle, Camera, Video, Play, Send, Users2, MessageSquare, MessageCircle, Heart, Vote } from 'lucide-react';
 import InteractiveMap from '../InteractiveMapLeaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -66,9 +66,6 @@ const LandingPage = ({ onAuthClick, onDemoClick }) => {
       </div>
     );
   };
-
-  // Holographic 3D Cameroon Map (Based on your reference image)
- 
 
   // Floating background elements
   const FloatingElements = () => (
@@ -214,16 +211,16 @@ const LandingPage = ({ onAuthClick, onDemoClick }) => {
                 className="px-8 py-4 text-lg font-semibold"
               >
                 <Eye className="w-6 h-6 mr-3" />
-                Login
+                Get Started
               </Button>
               <Button 
                 variant="secondary" 
                 size="lg" 
-                onClick={() => onAuthClick('login')}
+                onClick={() => onDemoClick()}
                 className="px-8 py-4 text-lg"
               >
                 <UserPlus className="w-6 h-6 mr-3" />
-                Login
+                Try Demo
               </Button>
             </div>
 
@@ -404,104 +401,6 @@ const LandingPage = ({ onAuthClick, onDemoClick }) => {
           </div>
         </div>
 
-        {/* Testimonials/Social Proof */}
-        <div className="py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6" style={{ color: colors.text }}>
-              Trusted by Organizations
-            </h2>
-            <p className="text-xl max-w-3xl mx-auto" style={{ color: colors.textSecondary }}>
-              Leading institutions across Cameroon trust Sui-Ru for digital safety
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { name: "Ministry of Communication", country: "Cameroon", logo: Building },
-              { name: "Digital Rights Foundation", country: "Nigeria", logo: Shield },
-              { name: "Tech Innovation Hub", country: "Kenya", logo: Cpu }
-            ].map((org, index) => (
-              <Card key={index} className="p-8 text-center transition-all duration-300 hover:scale-105">
-                <div 
-                  className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-6"
-                  style={{ backgroundColor: colors.bgTertiary }}
-                >
-                  <org.logo className="w-8 h-8" style={{ color: colors.primary }} />
-                </div>
-                <h4 className="text-xl font-semibold mb-2" style={{ color: colors.text }}>{org.name}</h4>
-                <p style={{ color: colors.textSecondary }}>{org.country}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Enhanced Testimonials with Quotes */}
-        <div className="py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6" style={{ color: colors.text }}>
-              What Our Users Say
-            </h2>
-            <p className="text-xl max-w-3xl mx-auto" style={{ color: colors.textSecondary }}>
-              Real feedback from organizations using Sui-Ru to protect their communities
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                quote: "Sui-Ru has revolutionized how we monitor and respond to digital threats. The AI accuracy for Cameroon's languages is remarkable.",
-                author: "Dr. Marie Ngozi",
-                role: "Director of Digital Safety",
-                organization: "Ministry of Communication, Cameroon",
-                rating: 5
-              },
-              {
-                quote: "The real-time alerts have helped us prevent several misinformation campaigns from spreading during critical periods in our regions.",
-                author: "Jean-Paul Mbarga",
-                role: "Chief Information Officer",
-                organization: "Elections Cameroon (ELECAM)",
-                rating: 5
-              },
-              {
-                quote: "Finally, a solution that understands our local context and languages. The threat detection across all 10 regions is incredibly precise.",
-                author: "Dr. Aminatou Ahidjo",
-                role: "Head of Digital Communications",
-                organization: "Cameroon Ministry of Posts and Telecommunications",
-                rating: 5
-              }
-            ].map((testimonial, index) => (
-              <Card key={index} className="p-8 transition-all duration-300 hover:scale-105 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br opacity-5 rounded-full" style={{ background: colors.gradientPrimary }} />
-                <div className="relative z-10">
-                  <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <div key={i} className="w-5 h-5 rounded-full mr-1" style={{ backgroundColor: colors.warning }}>
-                        <span className="text-white text-xs flex items-center justify-center h-full">★</span>
-                      </div>
-                    ))}
-                  </div>
-                  <blockquote className="text-lg leading-relaxed mb-6" style={{ color: colors.text }}>
-                    "{testimonial.quote}"
-                  </blockquote>
-                  <div className="flex items-center">
-                    <div 
-                      className="w-12 h-12 rounded-full flex items-center justify-center mr-4"
-                      style={{ backgroundColor: colors.bgTertiary }}
-                    >
-                      <User className="w-6 h-6" style={{ color: colors.textSecondary }} />
-                    </div>
-                    <div>
-                      <div className="font-semibold" style={{ color: colors.text }}>{testimonial.author}</div>
-                      <div className="text-sm" style={{ color: colors.textSecondary }}>{testimonial.role}</div>
-                      <div className="text-xs" style={{ color: colors.textMuted }}>{testimonial.organization}</div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
         {/* Case Studies Section */}
         <div className="py-20">
           <div className="text-center mb-16">
@@ -624,8 +523,6 @@ const LandingPage = ({ onAuthClick, onDemoClick }) => {
           </div>
         </div>
 
-
-
         {/* Model Testing Demo Section */}
         <div className="py-20">
           <div className="text-center mb-16">
@@ -732,7 +629,7 @@ const LandingPage = ({ onAuthClick, onDemoClick }) => {
                   className="px-10 py-5 text-lg font-semibold"
                 >
                   <Eye className="w-6 h-6 mr-3" />
-                  Login
+                  Get Started
                 </Button>
               </div>
             </div>

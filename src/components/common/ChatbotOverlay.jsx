@@ -32,7 +32,7 @@ const ChatbotOverlay = () => {
     setIsTyping(true);
 
     try {
-      const response = await axiosInstance.post('/api/azure-openai/ask/', { question: inputMessage });
+      const response = await axiosInstance.post('/api/openai/ask/', { question: inputMessage });
       const botResponse = {
         id: messages.length + 2,
         type: 'bot',

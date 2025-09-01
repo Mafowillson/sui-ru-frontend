@@ -5,6 +5,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
+
 import { User, AlertCircle, Settings, AlertTriangle, XCircle, Search, Activity } from 'lucide-react';
 
 const AnalystWorkstation = ({ user }) => {

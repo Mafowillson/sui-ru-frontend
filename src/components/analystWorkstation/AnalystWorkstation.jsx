@@ -8,7 +8,7 @@ import Badge from '../ui/Badge';
 import AnalystSideNavigation from './AnalystSideNavigation';
 import { User, AlertCircle, Settings, AlertTriangle, XCircle, Search, Activity } from 'lucide-react';
 
-const AnalystWorkstation = ({ user, onLogout }) => {
+const AnalystWorkstation = ({ user, onLogout, onNavigateToDashboard }) => {
   const { colors } = useTheme();
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [filters, setFilters] = useState({
@@ -864,7 +864,7 @@ const AnalystWorkstation = ({ user, onLogout }) => {
       className="min-h-screen transition-all duration-500"
       style={{ backgroundColor: colors.bg }}
     >
-      <AnalystSideNavigation onLogout={onLogout} />
+      <AnalystSideNavigation onLogout={onLogout} onNavigateToDashboard={onNavigateToDashboard} />
       
       <div className="ml-64 pt-16">
         {/* Header */}

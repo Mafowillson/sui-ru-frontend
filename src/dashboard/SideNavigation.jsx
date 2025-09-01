@@ -3,12 +3,12 @@ import { useTheme } from '../contexts/ThemeContext';
 import Button from '../components/ui/Button';
 import { Home, Search, Activity, BarChart3, Globe2, Monitor, Bell, FileText, Settings } from 'lucide-react';
 
-const SideNavigation = ({ activeTab, setActiveTab, onLogout, onAnalystClick }) => {
+const SideNavigation = ({ activeTab, setActiveTab, onLogout }) => {
   const { colors } = useTheme();
   
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'analyst', label: 'Analyst Workstation', icon: Search, isAnalyst: true },
+    { id: 'analyst', label: 'Analyst Workstation', icon: Search },
     { id: 'monitoring', label: 'Live Monitoring', icon: Activity },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'geographic', label: 'Geographic Intel', icon: Globe2 },
@@ -19,11 +19,7 @@ const SideNavigation = ({ activeTab, setActiveTab, onLogout, onAnalystClick }) =
   ];
 
   const handleItemClick = (item) => {
-    if (item.isAnalyst) {
-      onAnalystClick();
-    } else {
-      setActiveTab(item.id);
-    }
+    setActiveTab(item.id);
   };
 
   return (
